@@ -1,0 +1,28 @@
+jQuery.fn.sortElements = (function(){
+
+	var sort = [].sort;
+	
+	return function(comparator, getSortable) {
+		getSortable = getSortable || function() {
+			return this;
+		};
+		
+		var placements = this.map( function() {
+			var sortElement = getSortable.call(this);
+			var parentNode = sortElement.parentNode;
+			var nextSibling = parentNode.insertBefore(document.createTextNode(''), sortElement.nextSibling);
+			
+			return function() {
+				if (parentNode === this) {
+					throw new Error("Elements are descendants");
+				}
+				parentNode.insertBefore(this, nextSibling);
+				parentNode.removeChild(nextSibling);
+			};
+		});
+		
+		return sort.call(this, comparator).each(function(i){
+			placements[i].call(getSortable.call(this));
+		});
+	};
+})();

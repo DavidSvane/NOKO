@@ -1,0 +1,117 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<meta name="format-detection" content="telephone=no">
+	<meta name="msapplication-tap-highlight" content="no">
+
+	<title>NOKO</title>
+
+	<link rel="stylesheet" href="lib/framework7/css/framework7.ios.min.css">
+	<link rel="stylesheet" href="lib/framework7/css/framework7.ios.colors.min.css">
+	<link rel="stylesheet" href="css/framework7-icons.css">
+	<link rel="stylesheet" href="css/styles.css">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+</head>
+
+<body>
+    <!--
+		Status bar overlay for full screen mode (PhoneGap)
+		"statusbar-overlay": when commented out, nothing happens
+		"7@aahWhd3#^Wy8YF"
+	-->
+    <div class="statusbar-overlay"></div>
+
+    <!--
+		Panels overlay
+		"panel-overlay": when commented out, left-side menu can't be closed
+
+	-->
+    <div class="panel-overlay"></div>
+
+    <!-- Left panel with reveal effect-->
+    <div class="panel panel-left panel-reveal">
+        <div class="content-block loggedind">
+			<h1>Menu</h1>
+			<!--<a href="index.html" onclick="javascript:nokoLogout()" class="close-panel">Log ud</a>-->
+
+			<h2>Daglig</h2>
+			<a href="madplan.html" class="close-panel">Madplan</a>
+			<a href="vagtplan.html" class="close-panel">Vagtplan</a>
+			<a href="vasketider.html" class="close-panel">Vasketider</a>
+
+			<!--<br /><br /><i class="f7-icons size-28">more</i>-->
+
+			<h2>Info</h2>
+			<a href="alumni.html" class="close-panel">Alumner</a>
+			<a href="games.html" class="close-panel">Brætspil</a>
+			<a href="files.html" class="close-panel">Filer</a>
+      <a href="guides.html" class="close-panel">Guides</a>
+			<a href="kalender.html" class="close-panel">Kalender</a>
+			<a href="kontakt.html" class="close-panel">Kontakt</a>
+			<!--<a href="udvalg.html" class="close-panel">Udvalg &amp; Hverv</a>-->
+			<br /><br />
+
+      <a href="javascript:nokoLogout()">Log ud</a>
+      <br />
+
+			<!--<h2>Diverse</h2>
+			a href="plenum.html" class="close-panel">Plenum</a>-->
+
+			<!--<img src="res/NOKO_logo.png" style="width: 50%;"/>-->
+        </div>
+    </div>
+
+    <div class="views">
+        <div class="view view-main">
+            <div class="navbar">
+							<div class="navbar-inner">
+									<div class="left"><a href="#" onclick="javascript:frontPage()" class="link icon-only"><i class="f7-icons">refresh</i></a></div>
+									<div class="center sliding">Nordisk Kollegium</div>
+									<div class="right"><a href="#" class="link icon-only open-panel"><i class="f7-icons">bars</i></a></div>
+								</div>
+            </div>
+
+            <!-- Pages container -->
+            <div class="pages navbar-through toolbar-through">
+                <div data-page="index" class="page p_index">
+                    <div class="page-content">
+                        <div class="content-block">
+							<img src="res/NOKO_logo.png" id="splash_logo"/>
+							<div id="index_server">
+                <div id="i_front"></div>
+                <div id="i_login" class="loginbox">
+              		  <img src="res/NOKO_logo.png"/><br />
+                		<input type='text' id='i_user' name='user' placeholder='Navn  ⊕  Mail  ⊕  Nr' class='linput' autofocus/>
+              		  <input type='password' id='i_pass' name='pass' placeholder='Password' class='linput'/>
+              		  <p class='error'>Du gjorde noget forkert!<br /><br /></p>
+              		  <a href='javascript:nokoLogin()' id='loginBtn'>Log ind</a>
+                </div>
+              </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+		<!-- ***** JavaScripts ***** -->
+		<!-- LIBRARIES -->
+    <script type="text/javascript" src="cordova.js"></script>
+    <script type="text/javascript" src="lib/framework7/js/framework7.min.js"></script>
+		<script type="text/javascript" src="js/jQuery.js"></script>
+		<script type="text/javascript" src="js/MD5.js"></script>
+		<script type="text/javascript" src="js/cookies.js"></script>
+
+		<!-- CUSTOM -->
+		<script type="text/javascript" src="js/table_sort_elements.js"></script>
+		<script type="text/javascript" src="js/table_json_2d.js"></script>
+		<script type="text/javascript" src="js/my-app.js"></script>
+</body>
+
+</html>

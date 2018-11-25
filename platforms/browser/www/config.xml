@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.davidsvane.noko_android" version="1.1.5" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>NOKO</name>
+    <description>
+        App for Nordisk Kollegiums Alumner.
+    </description>
+    <author email="davidsvane@yahoo.dk" href="https://www.facebook.com/davidsvane">
+        David Svane
+    </author>
+    <content src="index.html" />
+    <access origin="*" />
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <allow-intent href="tel:*" />
+    <allow-intent href="sms:*" />
+    <allow-intent href="mailto:*" />
+    <allow-intent href="geo:*" />
+    <allow-intent href="http://*/*" launch-external="yes" />
+    <allow-intent href="https://*/*" launch-external="yes" />
+    <allow-navigation href="http://noko.dk/*" />
+    <preference name="DisallowOverscroll" value="true" />
+</widget>
