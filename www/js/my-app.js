@@ -25,21 +25,16 @@ function nokoLogin() {
 					localStorage.setItem('user', i_user);
 					localStorage.setItem('pass', i_pass);
 					localStorage.setItem('room', d_room);
-
-					/*setCookie("user", i_user, 10000);
-					setCookie("pass", i_pass, 10000);
-					setCookie("room", d_room, 10000);*/
-
 					frontPage();
 				} else {
-					$('#i_login .error').show();
+					if ( !$('#i_login a:last-child').hasClass('error') ) { $('#i_login a:last-child').addClass('error'); }
 				}
 			} catch (e) {
-				$('#i_login .error').show();
+				if ( !$('#i_login a:last-child').hasClass('error') ) { $('#i_login a:last-child').addClass('error'); }
 			}
 		});
 	} else {
-		$('#i_login .error').show();
+		if ( !$('#i_login a:last-child').hasClass('error') ) { $('#i_login a:last-child').addClass('error'); }
 	}
 }
 function nokoLogout() {
@@ -48,11 +43,8 @@ function nokoLogout() {
 	localStorage.removeItem('user');
 	localStorage.removeItem('pass');
 
-	/*setCookie("user","",0);
-	setCookie("pass","",0);*/
-
 	$('#i_front').hide();
-	$('#i_login').show();
+	$('#i_login').css("display","grid");
 	$('.panel.panel-left.panel-reveal .content-block').addClass('loggedind');
 
 	frontPage();
@@ -63,20 +55,9 @@ function nokoLogout() {
 ***** Page functions *****
 */
 function frontPage() {
-	if ( (localStorage.getItem("user") != null && localStorage.getItem("pass") != null) /*||
- 				(getCookie("user").length > 0 && getCookie("pass").length > 0)*/ ) {
-
-		/*if ( getCookie("user").length > 0 && getCookie("pass").length > 0 ) {
-			var user = getCookie("user");
-			var pass = getCookie("pass");
-		} else {*/
-			var user = localStorage.getItem("user");
-			var pass = localStorage.getItem("pass");
-		/*}*/
-
-		$('.loggedind').removeClass('loggedind');
-		$('#i_login').hide();
-		$('#i_front').show();
+	if ( (localStorage.getItem("user") != null && localStorage.getItem("pass") != null) ) {
+		var user = localStorage.getItem("user");
+		var pass = localStorage.getItem("pass");
 
 		$$.post('http://noko.dk/ds/server_script.php', {request: 'index', p: pass}, function (data) {
 			var obj = JSON.parse(data);
@@ -140,16 +121,17 @@ function frontPage() {
 				$('#ip_party p').append('Der er ingen Noko arrangementer i kalenderen.');
 			}
 
+			$('.loggedind').removeClass('loggedind');
 			$('#splash_logo').hide();
 			$('#i_login').hide();
-			$('#i_front').show();
+			$('#i_front').css("display","grid");
 
 		});
 	} else {
 
 		$('#splash_logo').hide();
 		$('#i_front').hide();
-		$('#i_login').show();
+		$('#i_login').css("display","grid");
 
 		window.addEventListener('keypress', function(e) {
 			if (event.keyCode == '13') {
@@ -430,7 +412,10 @@ function onlyImg() {
 /*
 ***** DeviceReady and PageInit functions  *****
 */
-$$(document).on('deviceready', function() { frontPage(); });
+$$(document).on('deviceready', function() {
+	frontPage();
+	$('#loginBtn').click(function() { nokoLogin(); });
+});
 $$(document).on('pageInit', function (e) {
     var page = e.detail.page;
     if (page.name === 'index') { mainView.router.back({ url: myApp.mainView.history[0], force: true }); frontPage();
