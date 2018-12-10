@@ -97,7 +97,7 @@ tr:nth-child(2n) td { background: #f4f4f4;}
 #games_server tbody td:first-child { font-weight: normal !important; }
 
 #guide_list { display: grid; box-sizing: border-box; padding: 1em; }
-#guide_list h2 { margin-top: 0.5em; color: white !important; background: #09f; }
+#guide_list h2 { margin-top: 0.5em; color: white !important; background: #09f; padding: 1em 0; }
 #guide_list h3, #guide_list h4 { font-weight: bold; }
 #guide_list ul { list-style: none; list-style-position: inside; }
 #guide_list ol ol li { list-style-type: lower-alpha; padding-left: 1em; font-style: italic; }

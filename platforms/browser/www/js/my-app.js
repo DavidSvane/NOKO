@@ -285,6 +285,18 @@ function vagtPage() {
 		}
 	});
 }
+function guidesPage() {
+	$$.post('http://noko.dk/ds/server_script.php', {request: 'guides'}, function (data) {
+		console.log(data);
+		var obj = JSON.parse(data);
+		var keys = Object.keys(obj);
+		console.log(keys);
+
+		for (var key in keys) {
+			$('#guide_list ul').append('<li class="accordion-item"><a href="#" class="item-content item-link"><div class="item-inner"><div class="item-title"><h2>'+obj[key][0]+'</h2></div></div></a><div class="accordion-item-content"><div class="block">'+obj[key][1]+'</div></div></li>');
+		}
+	});
+}
 
 /* NEEDS CLEANING */
 function vaskeriPage() {
@@ -429,5 +441,5 @@ $$(document).on('pageInit', function (e) {
 	} else if (page.name === 'games') { gamesPage('name');
 	} else if (page.name === 'udvalg') { udvalgPage();
 	} else if (page.name === 'files') { filesPage();
-	}
+	} else if (page.name === 'guides') { guidesPage(); }
 });
