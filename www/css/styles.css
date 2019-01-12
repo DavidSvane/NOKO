@@ -51,16 +51,18 @@ tr:nth-child(2n) td { background: #f4f4f4;}
 #i_front { display: none; position: fixed; width: 100%; height: calc(100% - 44px); }
 #i_login { display: none; position: fixed; width: 100%; height: calc(100% - 132px); box-sizing: border-box; }
 
-#ip_cnt { box-sizing: border-box; width: 100%; height: 100%; padding: 1em; display: grid; grid-template-rows: repeat(4, 1fr); grid-gap: 1em; }
-#ip_cnt a { box-sizing: border-box; height: 100%; padding: 1.5em; height: 100%; }
+#ip_cnt { box-sizing: border-box; width: 100%; height: 100%; padding: 1em; display: grid; grid-template-rows: repeat(4, 1fr); }
+#ip_cnt a { box-sizing: border-box; height: 100%; padding: 0.5em; height: 100%; }
 #ip_cnt img { border-radius: 100%; height: 80%; }
 #ip_cnt a div { display: grid; grid-template-columns: 2fr 3fr; height: 100%; align-items: center; }
-#ip_cnt * { color: black; }
+#ip_cnt * { color: white; }
+#ip_cnt p { padding-right: 2em; }
 
-#ip_food img { background: var(--food); }
-#ip_kitchen img { background: var(--kitchen); }
-#ip_wash img { background: var(--laundry); }
-#ip_party img { background: var(--calendar); }
+#icon_f, #icon_k, #icon_w, #icon_p { background-repeat: no-repeat; background-position: left center; background-size: contain; }
+#ip_food > div { background-color: var(--food); } #icon_f { background-image: url("../res/icon_food.png"); }
+#ip_kitchen > div { background-color: var(--kitchen); } #icon_k { background-image: url("../res/icon_kitchen.png"); }
+#ip_wash > div { background-color: var(--laundry); } #icon_w { background-image: url("../res/icon_wash.png"); }
+#ip_party > div { background-color: var(--calendar); } #icon_p { background-image: url("../res/icon_party.png"); }
 
 .p_index .logud { margin: 1em 0; padding: 0; width: 100%; text-align: center; font-size: 1.5em; display: block; }
 .p_index .loginbox { width: 100%; height: 100%; grid-template-rows: repeat(3, 1fr); grid-gap: 32px; }
@@ -96,11 +98,12 @@ tr:nth-child(2n) td { background: #f4f4f4;}
 #games_server tbody td:nth-child(2), #games_server tbody td:nth-child(3) { white-space: nowrap; text-align: center; }
 #games_server tbody td:first-child { font-weight: normal !important; }
 
-#guide_list { display: grid; box-sizing: border-box; padding: 1em; }
-#guide_list h2 { margin-top: 0.5em; color: white !important; background: #09f; padding: 1em 0; }
-#guide_list h3, #guide_list h4 { font-weight: bold; }
-#guide_list ul { list-style: none; list-style-position: inside; }
-#guide_list ol ol li { list-style-type: lower-alpha; padding-left: 1em; font-style: italic; }
-#guide_list img { width: 100%; }
-#guide_list .accordion-item-content { background: #f0f0f0; }
-#guide_list .accordion-item-content .block { padding: 1em; }
+#guides_server { display: grid; box-sizing: border-box; padding: 1em; }
+#guides_server > div { margin-bottom: 2em; display: none; }
+#guides_server h2 { margin-top: 0.5em; color: white !important; background: #09f; padding: 1em 0; }
+#guides_server h3, #guides_server h4 { font-weight: bold; }
+#guides_server ul { list-style: none; list-style-position: inside; }
+#guides_server ol, #guides_server ol ol { list-style-position: inside; }
+#guides_server ol ol li { list-style-type: lower-alpha; padding-left: 1em; font-style: italic; }
+#guides_server img { width: 100%; }
+#guides_server .block { background: #f0f0f0; box-sizing: content-box; padding: 1em; }

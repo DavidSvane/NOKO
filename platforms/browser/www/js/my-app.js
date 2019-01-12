@@ -76,7 +76,7 @@ function frontPage() {
 			}
 
 			// MADPLAN CONTENT
-			$('#ip_food div').append('<img src="res/icon_food.png"/><p></p>');
+			$('#ip_food div').append('<div id="icon_f"></div><p></p>');
 			if (obj.mad) {
 				$('#ip_food p').append('I da skal du have <b>' + obj.mad.toLowerCase().replace(/\.$/, "") + '</b>  til aftensmad.');
 			} else {
@@ -84,7 +84,7 @@ function frontPage() {
 			}
 
 			// KITCHEN PLANS CONTENT
-			$('#ip_kitchen div').append('<img src="res/icon_kitchen.png"/><p></p>');
+			$('#ip_kitchen div').append('<div id="icon_k"></div><p></p>');
 			if (obj.vagter) {
 				$('#ip_kitchen p').append('Dine køkkenvagter denne måned er den ');
 				var vagter = obj.vagter.split('___');
@@ -97,7 +97,7 @@ function frontPage() {
 			}
 
 			// LAUNDRY CONTENT
-			$('#ip_wash div').append('<img src="res/icon_wash.png"/><p></p>');
+			$('#ip_wash div').append('<div id="icon_w"></div><p></p>');
 			if (obj.vaske) {
 				$('#ip_wash p').append('Husk dine vasketider ');
 				var tider = obj.vaske.split('___');
@@ -114,7 +114,7 @@ function frontPage() {
 			}
 
 			// PARTY CONTENT
-			$('#ip_party div').append('<img src="res/icon_party.png"/><p></p>');
+			$('#ip_party div').append('<div id="icon_p"></div><p></p>');
 			if (obj.event_n) {
 				$('#ip_party p').append('Næste noko arrangement er <b>' + obj.event_n + '</b> den <b>' + obj.event_d.substr(8,2) + '/' + obj.event_d.substr(5,2) + '</b>.');
 			} else {
@@ -184,13 +184,14 @@ function calPage() {
 		var obj = JSON.parse(data);
 		var keys = Object.keys(obj);
 		var table_content;
+		console.log(data);
 
 		// Populates the calendar page with the year as table title
 		for (var key in keys) {
 			table_content = table_json_2d([' ','Event','Arrangør'], obj[keys[key]]);
 			$('#cal_server').append('<h2>' + keys[key] + '</h2><table></table>');
-			$('#cal_server table').append(table_content['thead']);
-			$('#cal_server table').append(table_content['tbody']);
+			$('#cal_server table').last().append(table_content['thead']);
+			$('#cal_server table').last().append(table_content['tbody']);
 		}
 	});
 }
@@ -293,7 +294,11 @@ function guidesPage() {
 		console.log(keys);
 
 		for (var key in keys) {
-			$('#guide_list ul').append('<li class="accordion-item"><a href="#" class="item-content item-link"><div class="item-inner"><div class="item-title"><h2>'+obj[key][0]+'</h2></div></div></a><div class="accordion-item-content"><div class="block">'+obj[key][1]+'</div></div></li>');
+			$('#guides_server').append('<h2>'+obj[key][0]+'</h2><div class="block">'+obj[key][1]+'</div>');
+			$('#guides_server > h2').click(function() {
+				$('#guides_server > div').hide();
+				$(this).next().show();
+			});
 		}
 	});
 }
