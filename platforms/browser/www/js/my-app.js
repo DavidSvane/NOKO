@@ -4,447 +4,317 @@ var $$ = Dom7;
 var mainView = myApp.addView('.view-main', { dynamicNavbar: true });
 
 
-/*
-***** Login page functions *****
-*/
+/* LOGIN PAGE */
 function nokoLogin() {
-	var i_user = $('#i_user').val();
-	var i_pass = MD5($('#i_pass').val());
 
-	if (i_user.length > 0 && i_pass.length > 0) {
-		$$.post('http://noko.dk/ds/server_script.php', {request: 'index', p: i_pass}, function (d) {
-			var obj = JSON.parse(d);
-			try {
-				var d_room = obj.room;
-				var d_name = obj.name;
-				var l_name = d_name.toLowerCase();
-				var d_mail = obj.mail;
-				var d_nr = obj.nr;
+	var user = $('#login_user').val();
+	var pass = MD5($('#login_pass').val());
 
-				if (d_name.localeCompare(i_user) == 0 || d_mail.localeCompare(i_user) == 0 || d_room.localeCompare(i_user) == 0 || d_nr.localeCompare(i_user) == 0 || d_name.indexOf(i_user) == 0 || l_name.localeCompare(i_user)) {
-					localStorage.setItem('user', i_user);
-					localStorage.setItem('pass', i_pass);
-					localStorage.setItem('room', d_room);
-					frontPage();
-				} else {
-					if ( !$('#i_login a:last-child').hasClass('error') ) { $('#i_login a:last-child').addClass('error'); }
-				}
-			} catch (e) {
-				if ( !$('#i_login a:last-child').hasClass('error') ) { $('#i_login a:last-child').addClass('error'); }
-			}
-		});
-	} else {
-		if ( !$('#i_login a:last-child').hasClass('error') ) { $('#i_login a:last-child').addClass('error'); }
-	}
+  if ( user.length < 1 || pass.length < 1 ) { return; }
+
+  $.post('http://davidsvane.com/noko/server/verify.php', {usr: user, pas: pass}, function (data) {
+
+    if ( data.length < 42 ) { $('#cnt_login .error').show(); return; }
+
+    var obj = JSON.parse(data);
+
+    window.localStorage.setItem('user', obj[0].nr);
+    window.localStorage.setItem('salt', obj.salt);
+    window.localStorage.setItem('room', obj[0].room);
+
+    $('#cnt_login').hide();
+    $('#cnt_front').hide();
+    $('#splash_logo').show();
+    load('index');
+
+  });
+
 }
 function nokoLogout() {
+
 	myApp.closePanel();
 
-	localStorage.removeItem('user');
-	localStorage.removeItem('pass');
+	window.localStorage.removeItem('user');
+	window.localStorage.removeItem('salt');
 
-	$('#i_front').hide();
-	$('#i_login').css("display","grid");
-	$('.panel.panel-left.panel-reveal .content-block').addClass('loggedind');
+	$('#cnt_front').hide();
+	$('#splash_logo').hide();
+	$('#cnt_login').show();
+	load('index');
 
-	frontPage();
 }
 
 
-/*
-***** Page functions *****
-*/
-function frontPage() {
-	if ( (localStorage.getItem("user") != null && localStorage.getItem("pass") != null) ) {
-		var user = localStorage.getItem("user");
-		var pass = localStorage.getItem("pass");
+/* SPECIAL FUNCTIONS */
+function tfn(n) {
 
-		$$.post('http://noko.dk/ds/server_script.php', {request: 'index', p: pass}, function (data) {
-			var obj = JSON.parse(data);
-			var date = new Date();
-			var day = ["mandag", "tirsdag", "onsdag", "torsdag", "fredag", "lørdag", "søndag"];
-			var day_c = [true, true, true, true, true, true, true]
-			var order = ["food", "kitchen", "wash", "party"];
-			var href = ["madplan", "vagtplan", "vasketider", "kalender"];
+  var h = Math.floor((300 + (parseInt(n-1) * 75)) / 60) % 24;
+  var m = ((h * 60) + (parseInt(n-2) * 75)) % 60;
 
-			localStorage.setItem('room', obj.room);
+  h = ("00" + h).substr(-2);
+  m = ("00" + m).substr(-2);
 
-			// CREATING CONTENT GRID
-			$('#i_front').html('<div id="ip_cnt"></div>');
-			for (var i = 0; i < 4; i++) {
-				$('#ip_cnt').append('<a href="' + href[i] + '.html" id="ip_' + order[i] + '"><div></div></a>')
-			}
+  return h + ":" + m;
 
-			// MADPLAN CONTENT
-			$('#ip_food div').append('<div id="icon_f"></div><p></p>');
-			if (obj.mad) {
-				$('#ip_food p').append('I da skal du have <b>' + obj.mad.toLowerCase().replace(/\.$/, "") + '</b>  til aftensmad.');
-			} else {
-				$('#ip_food p').append('Der er ingen mad på menuen.');
-			}
-
-			// KITCHEN PLANS CONTENT
-			$('#ip_kitchen div').append('<div id="icon_k"></div><p></p>');
-			if (obj.vagter) {
-				$('#ip_kitchen p').append('Dine køkkenvagter denne måned er den ');
-				var vagter = obj.vagter.split('___');
-				for (var i = 0; i < vagter.length-1; i++) {
-					if (i > 0) { $('#ip_kitchen p').append(', '); }
-					$('#ip_kitchen p').append( vagter[i].split('__')[1] );
-				}
-			} else {
-				$('#ip_kitchen p').append('Denne måned har du ingen køkkenvagter.');
-			}
-
-			// LAUNDRY CONTENT
-			$('#ip_wash div').append('<div id="icon_w"></div><p></p>');
-			if (obj.vaske) {
-				$('#ip_wash p').append('Husk dine vasketider ');
-				var tider = obj.vaske.split('___');
-				for (var i = 0; i < tider.length-1; i++) {
-					if ( day_c[tider[i].split('_')[3]-1] ) {
-						if (i > 0) { $('#ip_wash p').append(', '); }
-						$('#ip_wash p').append( '<b>' + day[tider[i].split('_')[3]-1] + '</b>' );
-						day_c[tider[i].split('_')[3]-1] = false;
-					}
-				}
-				$('#ip_wash p').append(' i denne uge.');
-			} else {
-				$('#ip_wash p').append('Du har ikke booket nogen vasketider.');
-			}
-
-			// PARTY CONTENT
-			$('#ip_party div').append('<div id="icon_p"></div><p></p>');
-			if (obj.event_n) {
-				$('#ip_party p').append('Næste noko arrangement er <b>' + obj.event_n + '</b> den <b>' + obj.event_d.substr(8,2) + '/' + obj.event_d.substr(5,2) + '</b>.');
-			} else {
-				$('#ip_party p').append('Der er ingen Noko arrangementer i kalenderen.');
-			}
-
-			$('.loggedind').removeClass('loggedind');
-			$('#splash_logo').hide();
-			$('#i_login').hide();
-			$('#i_front').css("display","grid");
-
-		});
-	} else {
-
-		$('#splash_logo').hide();
-		$('#i_front').hide();
-		$('#i_login').css("display","grid");
-
-		window.addEventListener('keypress', function(e) {
-			if (event.keyCode == '13') {
-				nokoLogin();
-			}
-		});
-
-	}
 }
-function alumniPage(sort) {
-	$$.post('http://noko.dk/ds/server_script.php', {request: 'alumni', sort: sort}, function (data) {
-		var obj = JSON.parse(data);
-		var table_content = table_json_2d(['Nr','Navn','Img'], obj);
+function bookLaundry(week, day, nr, time) {
 
-		$('#alumni_server').append('<div id="as_bg"></div>');
-		$('#alumni_server').append('<table></table>');
-		$('#alumni_server table').append(table_content['thead']);
-		$('#alumni_server table').append(table_content['tbody']);
+  book_id = week+'_'+day+'_'+nr+'_'+time;
+  $.post('http://davidsvane.com/noko/server/db.php', {page: "laundry_book", nr: window.localStorage.getItem('user'), room: window.localStorage.getItem('room'), bid: book_id}, function (data) {
+    window.localStorage.setItem('active', $('#cnt_laundry div:visible').attr("tnt_tab"));
+    load('laundry', true);
+   });
 
-		// Provides all titles with sorting links
-		$('#alumni_server table thead td').each(function (i) {
-			if (i < 2) {
-				$(this).html('<a href="javascript:sortAlumni(' + (i+1) + ')">' + $(this).text() + '</a>');
-			} else {
-				$(this).html('<a href="javascript:onlyImg()">' + $(this).text() + '</a>');
-			}
-		});
-
-		// Adds invisible prefixed zeroes
-		$('#alumni_server table tbody td:nth-child(1)').each(function () {
-			for ($i = $(this).text().length; $i < 4; $i++) {
-				$(this).prepend('<i>0</i>');
-			}
-		});
-
-		// Turns all alumni numbers into image sources
-		$('#alumni_server table tbody td:nth-child(3)').each(function () {
-			$(this).html('<img src="http://noko.dk/ds/alumner/' + $(this).text() + '.png" onerror="this.style.display=\'none\'" style=""/>');
-		});
-
-		// Photo zoom
-		$('#alumni_server table img').click(function () {
-			$(this).toggleClass('floater');
-			$('#alumni_server #as_bg').toggle();
-		});
-	});
 }
-function calPage() {
-	$$.post('http://noko.dk/ds/server_script.php', {request: 'calendar'}, function (data) {
-		var obj = JSON.parse(data);
-		var keys = Object.keys(obj);
-		var table_content;
-		console.log(data);
+function removeLaundry(book_id) {
 
-		// Populates the calendar page with the year as table title
-		for (var key in keys) {
-			table_content = table_json_2d([' ','Event','Arrangør'], obj[keys[key]]);
-			$('#cal_server').append('<h2>' + keys[key] + '</h2><table></table>');
-			$('#cal_server table').last().append(table_content['thead']);
-			$('#cal_server table').last().append(table_content['tbody']);
-		}
-	});
-}
-function filesPage() {
-	$$.post('http://noko.dk/ds/server_script.php', {request: 'files'}, function (data) {
-		var obj = JSON.parse(data);
-		var pos = 0;
+  $.post('http://davidsvane.com/noko/server/db.php', {page: "laundry_remove", nr: window.localStorage.getItem('user'), room: window.localStorage.getItem('room'), bid: book_id}, function (data) {
+    window.localStorage.setItem('active', $('#cnt_laundry div:visible').attr("tnt_tab"));
+    load('laundry', true);
+  });
 
-		$('#files_server').append('<table><tbody></tbody></table>');
-
-		for (var i = 2; i < obj.length; i++) {
-			pos = obj[i].lastIndexOf(".");
-			$('#files_server tbody').append("<tr><td><a href='http://noko.dk/ds/files/" + obj[i] + "'><img src='res/type_" + obj[i].substr(pos+1,3) + ".png'/>" + obj[i].substr(0,pos) + "</a></td></tr>");
-		}
-
-		$('#files_server a').each(function () {
-			$(this).attr("onclick","window.open('" + $(this).attr("href") + "', '_system')");
-			$(this).attr("data-rel","external");
-			$(this).attr("href","");
-		});
-	});
-}
-function gamesPage(sort) {
-	$$.post('http://noko.dk/ds/server_script.php', {request: 'games', sort: sort}, function (data) {
-		var obj = JSON.parse(data);
-		var keys = Object.keys(obj);
-
-		$('#games_server').append('<table><thead><tr></tr></thead><tbody></tbody></table>');
-
-		$('#games_server thead tr').append('<td><a href="javascript:gamesPage(\"name\")">Titel</a></td>');
-		$('#games_server thead tr').append('<td><a href="javascript:gamesPage(\"min_players\")">Spillere</a></td>');
-		$('#games_server thead tr').append('<td><a href="javascript:gamesPage(\"min_time\")">Tid</a></td>');
-
-		for (var key in keys) {
-			$('#games_server tbody').append('<tr></tr>');
-
-			$('#games_server tbody tr:last-child').append("<td>" + obj[keys[key]].name + "</td>");
-			$('#games_server tbody tr:last-child').append("<td>" + obj[keys[key]].p_min + "-" + obj[keys[key]].p_max + "</td>");
-			$('#games_server tbody tr:last-child').append("<td>" + obj[keys[key]].t_min + "-" + obj[keys[key]].t_max + "</td>");
-
-			$('#games_server tbody tr:last-child td').each(function() {
-				$(this).text( $(this).text().replace(/9999/g, "") );
-			});
-		}
-	});
-}
-function kontaktPage() {
-	$$.post('http://noko.dk/ds/server_script.php', {request: 'kontakt'}, function (data) {
-		var obj = JSON.parse(data);
-		var title = ["Kontoret", "Netværk", "Styrelsen", "Alumnerep.", "Køkken"];
-		var content = [1, 5, 2, 3, 7];
-
-		for (var i = 0; i < 5; i++) {
-			$('#kontakt_server').append('<h2>' + title[i] + '</h2><div class="text_box"></div>');
-			$('#kontakt_server .text_box:last-child').append(eval('obj.t' + content[i]));
-		}
-
-		$('#kontakt_server a').each(function () {
-			$(this).attr("onclick","window.open('" + $(this).attr("href") + "', '_system')");
-			$(this).attr("data-rel","external");
-			$(this).attr("href","");
-		});
-	});
-}
-function madPage() {
-	$$.post('http://noko.dk/ds/server_script.php', {request: 'mad'}, function (data) {
-		var obj = JSON.parse(data);
-		var keys = Object.keys(obj);
-		var table_content;
-
-		// Creates menu tables for every week provided in the database
-		for (var key in keys) {
-			table_content = table_json_2d(['Dag','Ret'], obj[keys[key]]);
-			$('#madplan_server').append('<h2>Uge '+((parseInt(keys[key].substring(1))-24)%52+1)+'</h2><table></table>');;
-			$('#madplan_server table:last-child').append(table_content['tbody']);
-		}
-	});
-}
-function vagtPage() {
-	$$.post('http://noko.dk/ds/server_script.php', {request: 'vagter'}, function (data) {
-		var obj = JSON.parse(data);
-		var keys = Object.keys(obj);
-		var mnd = ["Januar", "Februar", "Marts", "April", "Maj", "Juni", "Juli", "August", "September", "Oktober", "November", "December"];
-		var table_content;
-
-		// Populates the kitchen shift table for every month available
-		for (var key in keys) {
-			table_content = table_json_2d([' ','Opvask','Servering','Tidlig','Sen'], obj[keys[key]]);
-			$('#vagter_server').append('<h2>' + mnd[keys[key]-1] + '</h2><table></table>');
-			$('#vagter_server table:last-child').append(table_content['thead']);
-			$('#vagter_server table:last-child').append(table_content['tbody']);
-		}
-	});
-}
-function guidesPage() {
-	$$.post('http://noko.dk/ds/server_script.php', {request: 'guides'}, function (data) {
-		console.log(data);
-		var obj = JSON.parse(data);
-		var keys = Object.keys(obj);
-		console.log(keys);
-
-		for (var key in keys) {
-			$('#guides_server').append('<h2>'+obj[key][0]+'</h2><div class="block">'+obj[key][1]+'</div>');
-			$('#guides_server > h2').click(function() {
-				$('#guides_server > div').hide();
-				$(this).next().show();
-			});
-		}
-	});
-}
-
-/* NEEDS CLEANING */
-function vaskeriPage() {
-	$$.post('http://noko.dk/ds/server_script.php', {request: 'vaskeri'}, function (data) {
-		var obj = JSON.parse(data);
-		var keys_w = [parseInt(Object.keys(obj)[0]), (parseInt(Object.keys(obj)[0])+1)%52, (parseInt(Object.keys(obj)[0])+2)%52];
-		var txt = "";
-		var room = localStorage.getItem("room");
-		var date = new Date();
-		var now = date.getHours()*60 + date.getMinutes();
-
-		for (var w = 0; w < 3; w++) {
-			$('#t_uge' + (w+1)).html('Uge ' + keys_w[w]);
-			for (var n = 1; n < 4; n++) {
-				//txt = '<p class="bookBtn"><a href="javascript:bookVaskeri()">Book</a></p>';
-				txt = "<table class='text_box'><thead><tr class='titles'><td></td><td>M</td><td>T</td><td>O</td><td>T</td><td>F</td><td>L</td><td>S</td></tr></thead><tbody>";
-				for (var t = 0; t < 18; t++) {
-					txt += "<tr><td class='titles'>" + ("0" + parseInt(((360+(75*t))/60)%24)).slice(-2) + ":" + ("00" + parseInt((360+(75*t))%60)).slice(-2) + "</td>";
-					for (var d = 1; d < 8; d++) {
-						txt += "<td id="+keys_w[w]+"_"+n+"_"+t+"_"+d+">";
-						try {
-							if (obj[keys_w[w]][n][t][d] != undefined) {
-								if (room == obj[keys_w[w]][n][t][d]) {
-									txt += "<a href='javascript:removeVaskeri(" + obj[keys_w[w] + "_id"][n][t][d] + ")'>";
-									txt += obj[keys_w[w]][n][t][d];
-									txt += "</a>";
-								} else {
-									txt += obj[keys_w[w]][n][t][d];
-								}
-							} else {
-								if (w == 0 && d < date.getDay() ) {
-									txt += '<div class="bookBtnLate"></div>';
-								} else {
-									txt += '<div class="bookBtn" onclick="javascript:bookVaskeri(this)" id="'+String(keys_w[w])+'_'+String(n)+'_'+String(t)+'_'+String(d)+'_'+String(room)+'"></div>';
-								}
-							}
-						} catch (e) {
-							if (w == 0 && d < date.getDay() ) {
-								txt += '<div class="bookBtnLate"></div>';
-							} else {
-								txt += '<div class="bookBtn" onclick="javascript:bookVaskeri(this)" id="'+String(keys_w[w])+'_'+String(n)+'_'+String(t)+'_'+String(d)+'_'+String(room)+'"></div>';
-							}
-						}
-						txt += "</td>";
-					}
-					txt += "</tr>";
-				}
-				txt += "</tbody></table><br />";
-				$('#mi_' + String(w+1) + String (n)).html(txt);
-			}
-		}
-	});
-}
-
-/* REMOVED UNTIL AN ONLINE UPDATE METHOD EXISTS */
-function udvalgPage() {
-	$$.post('http://noko.dk/ds/server_script.php', {request: 'udvalg'}, function (data) {
-		var obj = JSON.parse(data);
-		var keys = Object.keys(obj);
-		var txt = "";
-
-		txt += "<table><thead><td>Udvalg</td><td>Formand</td></thead><tbody>";
-		for (var key in keys) {
-			txt += "<tr>";
-			txt += "<td><a href='https://www.facebook.com/groups/" + obj[keys[key]].fb + "'>" + obj[keys[key]].name + "</a></td>";
-			txt += "<td>" + obj[keys[key]].leader + "</td>";
-			txt += "</tr>";
-		}
-		txt += "</tbody></table>";
-
-		$('#udvalg_server').html(txt);
-		$('#udvalg_server a').each(function () {
-			$(this).attr("onclick","window.open('" + $(this).attr("href") + "', '_system')");
-			$(this).attr("data-rel","external");
-			$(this).attr("href","");
-		});
-	});
-
-	$$.post('http://noko.dk/ds/server_script.php', {request: 'poster'}, function (data) {
-		var obj = JSON.parse(data);
-		var keys = Object.keys(obj);
-		var txt = "";
-
-		txt += "<table><thead><td>Hverv</td><td>Alumner</td></thead><tbody>";
-		for (var key in keys) {
-			txt += "<tr>";
-			txt += "<td>" + keys[key] + "</td>";
-			txt += "<td>";
-			if (obj[keys[key]].p1) { txt += obj[keys[key]].p1; }
-			if (obj[keys[key]].p2) { txt += "<br />" + obj[keys[key]].p2; }
-			if (obj[keys[key]].p3) { txt += "<br />" + obj[keys[key]].p3; }
-			if (obj[keys[key]].p4) { txt += "<br />" + obj[keys[key]].p4; }
-			txt += "</td>";
-			txt += "</tr>";
-		}
-		txt += "</tbody></table>";
-
-		$('#poster_server').html(txt);
-	});
-}
-function plenumPage() {
-	$("#p_referat .block").load("res/referat.htm");
 }
 
 
-/*
-***** Booking and sorting functions *****
-*/
-function bookVaskeri(tid_id) {
-	$$.post('http://noko.dk/ds/server_script.php', {request: 'bookVaskeri', t: $(tid_id).attr("id")}, function (data) { vaskeriPage(); });
-}
-function removeVaskeri(id) {
-	$$.post('http://noko.dk/ds/server_script.php', {request: 'removeVaskeri', i: id}, function (data) { vaskeriPage(); });
-}
-function sortAlumni(col) {
-	$("#alumni_server tbody tr").sortElements(function(a, b){
-    return $(a).find("td:nth-child("+col+")").text() > $(b).find("td:nth-child("+col+")").text() ? 1 : -1;
-	});
-}
-function onlyImg() {
-	$('#alumni_server table').toggleClass('only_img');
+/* PAGES */
+function load(p, reload=false) {
+
+  var user = window.localStorage.getItem('user');
+
+  if ( window.localStorage.getItem('user') != null && window.localStorage.getItem('salt') != null ) {
+
+    var user = window.localStorage.getItem('user');
+    var salt = window.localStorage.getItem('salt');
+
+    $.post('http://davidsvane.com/noko/server/verify.php', {usr: user, sal: salt}, function (data) {
+
+      if ( data.length < 42 ) { return; }
+
+      var upgraded = ['guides'];
+      var version = upgraded.includes(p) ? 1 : 0;
+
+      $.post('http://davidsvane.com/noko/server/app.php', {page: p, ver: version, nr: user}, function (data) {
+
+        if ( data.length < 21 ) { return; }
+
+        var obj = JSON.parse(data);
+        var dage = ['Mandag','Tirsdag','Onsdag','Torsdag','Fredag','Lørdag','Søndag'];
+        var mths = ['Januar','Februar','Marts','April','Maj','Juni','Juli','August','September','Oktober','November','December'];
+
+        switch(p) {
+
+          case 'index':
+            $('#cnt_front').html("");
+            $('#cnt_front').append('<div id="cnt_mash"></div><div id="cnt_news"></div>');
+
+            $('#cnt_mash').append('<a href="food.html" class="mash_food">I dag skal du have '+obj['food'][0][0]+'.</a>');
+
+            if (obj['shifts'].length > 0) {
+              $('#cnt_mash').append('<a href="shifts.html" class="mash_shifts">Husk dine køkkenvagter denne måned.</a>');
+            } else {
+              $('#cnt_mash').append('<a href="shifts.html" class="mash_shifts">Du har ingen køkkenvagter denne måned.</a>');
+            }
+
+            if (obj['laundry'].length > 0) {
+              $('#cnt_mash').append('<a href="laundry.html" class="mash_laundry">Husk dine vasketider denne uge.</a>');
+            } else {
+              $('#cnt_mash').append('<a href="laundry.html" class="mash_laundry">Du har ingen bookede vasketider denne uge.</a>');
+            }
+
+            $('#cnt_mash').append('<a href="calendar.html" class="mash_party">Næste NOKO-arrangement er '+obj['party'][0][1]+' den '+obj['party'][0][0].substr(8,2)+'/'+obj['party'][0][0].substr(5,2)+'.</a>');
+
+            $('#splash_logo').hide();
+            $('#cnt_login').hide();
+            $('#cnt_front').show();
+
+            $.post('http://davidsvane.com/noko/server/app.php', {page: 'news', ver: 1, nr: user}, function (data) {
+
+              if ( data.length > 42 ) {
+
+                var news = JSON.parse(data)[0];
+                var appendix = "";
+
+                news.forEach(function (e) {
+
+                  appendix = '<div ';
+                  if (e.link != null) { appendix += 'onclick="javascript:window.open(\''+e.link+'\', \'_system\')"'; }
+                  appendix += 'class="item news_block p'+e.priority+'"';
+                  if (e.img != null) { appendix += ' style="background-image: url(\''+e.img+'\')"'; }
+                  appendix += '><div class="information"><div class="titles dotdotdot">'+e.title+'</div>';
+                  appendix += '<div id="ddd_'+e.id+'" class="descriptions multidots"></div>';
+                  appendix += '<div class="spacetime dotdotdot">'+dtFormat(e.time)+' '+e.place+'</div></div></div>';
+
+                  $('#cnt_news').append( appendix );
+                });
+
+              }
+
+            });
+            break;
+
+          case 'food':
+            $('#cnt_'+p).html("");
+
+            obj[0].forEach(function (e) {
+              $('#cnt_'+p).append('<h1>Uge '+weekFromISO(e['week'])+'</h1><table cellspacing=0></table>');
+              for (var i = 0; i < 7; i++) { $('#cnt_'+p+' table:last-child').append('<tr><td>'+dage[i]+'</td><td>'+e['d'+(i+1)]+'</td></tr>'); }
+            });
+            break;
+
+          case 'shifts':
+            var month = "";
+            $('#cnt_'+p).html("");
+
+            obj[0].forEach(function (e) {
+              if (e['month'].substr(5,2) != month) {
+                month = e['month'].substr(5,2);
+                $('#cnt_'+p).append('<h1>'+mths[parseInt(month)-1]+'</h1><table cellspacing=0><tr><td></td><td>Severing</td><td>Opvask</td><td>Tidlig</td><td>Sen</td></tr></table>');
+              }
+
+              if (e['type'] == "1") {
+                $('#cnt_'+p+' table:last-child').append('<tr class="dim_'+e['day']+'"><td>'+e['day']+'.</td><td>'+e['d2']+'</td><td>'+e['d1']+'</td></tr>');
+              } else {
+                $('#cnt_'+p+' table:last-child .dim_'+e['day']).append('<td>'+e['d1']+'</td><td>'+e['d2']+'</td>');
+              }
+            });
+            break;
+
+          case 'laundry':
+            var date = new Date();
+            var week = weekFromISO(date);
+            var ds = ["Tid","M","T","O","T","F","L","S"];
+            var room = window.localStorage.getItem('room');
+            var curr_day = date.getDay();
+            var curr_time = Math.floor(((date.getHours()*60)+date.getMinutes()-360)/75)+2;
+            $('#cnt_'+p).html("");
+            console.log(obj);
+
+            for (var i = week+2; i > week-1; i--) {
+              $('#cnt_'+p).prepend('<h1><a href="javascript:$(\'#cnt_laundry div\').hide(); $(\'.w_'+i+'\').toggle();">Uge '+i+'</a></h1>');
+              $('#cnt_'+p).append('<div class="w_'+i+'" tnt_tab="'+(i-week)+'"><h2>Uge '+i+'</h2></div>');
+            }
+
+            for (var j = 1; j < 4; j++) { $('#cnt_'+p+' div').append('<h3>Maskine '+j+'</h3><table class="m_'+j+'" tnt_table="'+(j-1)+'" cellspacing=0></table>'); }
+            for (var j = 0; j < 19; j++) { $('#cnt_'+p+' table').append('<tr class="t_'+j+'" tnt_row="'+j+'"></tr>'); }
+            for (var j = 0; j < 8; j++) { $('#cnt_'+p+' tr').append('<td class="d_'+j+'" tnt_col="'+j+'"></td>'); }
+
+            for (var j = 1; j < 20; j++) { $('#cnt_'+p+' tr:nth-child('+j+') td:first-child').text( tfn(j) ); }
+            for (var j = 0; j < 8; j++) { $('#cnt_'+p+' tr:first-child td:nth-child('+(j+1)+')').text( ds[j] ); }
+
+            obj[0].forEach(function (e) {
+              if ( parseInt(e['room']) == room ) {
+                $('#cnt_'+p+' .w_'+weekFromISO(e['week'])+' .m_'+e['nr']+' .t_'+e['time']+' .d_'+e['day']).html( '<a id="b_'+e['id']+'" class="owner" onclick="javascript:removeLaundry('+e['id']+')">'+e['room']+'</a>' );
+              } else {
+                $('#cnt_'+p+' .w_'+weekFromISO(e['week'])+' .m_'+e['nr']+' .t_'+e['time']+' .d_'+e['day']).text( e['room'] );
+              }
+            });
+
+            // INFO: ADDING BOOKING BUTTONS
+            $('#cnt_'+p+' td:empty').html('<a class="availables"></a>');
+            $('.availables').each(function (e) {
+              if ( $(this).closest("div").attr("tnt_tab") == 0 && (($(this).closest("td").attr("tnt_col") < curr_day) || ($(this).closest("td").attr("tnt_col") == curr_day && $(this).closest("tr").attr("tnt_row") < curr_time)) ) {
+                $(this).remove();
+              } else {
+                $(this).click(function (e) {
+                  bookLaundry(
+                    parseInt($(this).closest("div").attr("tnt_tab")),
+                    parseInt($(this).closest("td").attr("tnt_col")),
+                    parseInt($(this).closest("table").attr("tnt_table"))+1,
+                    parseInt($(this).closest("tr").attr("tnt_row"))
+                  );
+                });
+              }
+            });
+
+            if (reload) {
+              $('#cnt_'+p+' div').hide();
+              $('#cnt_'+p+' .w_'+(parseInt(window.localStorage.getItem('active')) + week)).show();
+            }
+            break;
+
+          case 'alumni':
+            var gangs = ["Stuen Nord", "1. Nord", "2. Nord", "3. Nord", "4. Nord", "5. Nord", "Stuen Syd", "1. Syd", "2. Syd", "3. Syd", "4. Syd", "5. Syd"];
+            var gang = {1:0, 3:0, 5:0, 7:0, 9:0, 11:0, 13:0, 15:0, 17:0, 19:0, 21:0, 23:0, 25:1, 27:1, 29:1, 31:1, 33:1, 35:1, 37:1, 39:1, 41:1, 43:2, 45:2, 47:2, 49:2, 51:2, 53:2, 55:2, 57:2, 59:2, 61:2, 63:2, 65:2, 67:3, 69:3, 71:3, 73:3, 75:3, 77:3, 79:3, 81:3, 83:3, 85:3, 87:3, 89:3, 91:3, 93:3, 95:3, 97:4, 99:4, 101:4, 103:4, 105:4, 107:4, 109:4, 111:4, 113:4, 115:4, 117:4, 119:4, 121:4, 123:4, 125:4, 127:5, 129:5, 131:5, 133:5, 135:5, 137:5, 139:5, 2:6, 4:6, 6:6, 8:6, 10:6, 12:6, 14:6, 16:6, 20:7, 22:7, 24:7, 26:7, 28:7, 30:7, 32:7, 34:7, 36:7, 38:7, 40:7, 42:7, 44:8, 46:8, 48:8, 50:8, 52:8, 54:8, 56:8, 58:8, 60:8, 62:8, 64:8, 66:8, 68:9, 70:9, 72:9, 74:9, 76:9, 78:9, 80:9, 82:9, 84:9, 86:9, 88:9, 90:9, 92:10, 94:10, 96:10, 98:10, 100:10, 102:10, 104:10, 106:10, 108:10, 110:10, 112:10, 114:10, 116:11, 118:11, 120:11, 122:11};
+
+            $('#cnt_'+p).html("");
+
+            gangs.forEach(function (g,i) {
+              $('#cnt_'+p).append('<h1>'+g+'</h1><table class="gang_'+i+'" cellspacing=0></table>');
+            });
+
+            obj[0].forEach(function (e) {
+              $('#cnt_'+p+' .gang_'+gang[e['room']]).append('<tr><td><img src="http://noko.dk/ds/alumner/'+e['nr']+'.jpg" onerror="javascript:$(this).remove()"/></td><td>'+e['room']+'</td><td>'+e['name']+'</td></tr>')
+            });
+
+            $('#cnt_'+p+' tr').each( function () { $(this).click( function () {
+              $(this).find('img').toggleClass('big_view');
+            })});
+            break;
+
+          case 'calendar':
+            var year = "";
+            var half = "";
+            var h = ['Forår','Efterår'];
+
+            $('#cnt_'+p).html("");
+
+            obj[0].forEach(function (e) {
+              if (e['date'].substr(0,4) != year) {
+                year = e['date'].substr(0,4);
+                $('#cnt_'+p).append('<h1>'+year+'</h1>');
+              }
+
+              if (Math.ceil(parseInt(e['date'].substr(5,2))/6) != half) {
+                half = Math.ceil(parseInt(e['date'].substr(5,2))/6);
+                $('#cnt_'+p).append('<h2>'+h[half-1]+'</h2>');
+                $('#cnt_'+p).append('<table cellspacing=0></table>');
+              }
+
+              $('#cnt_'+p+' table:last-child').append('<tr><td>'+e['date'].substr(8,2)+'/'+e['date'].substr(5,2)+'</td><td>'+e['name']+'</td></tr>');
+              if (e['who'].length > 0) { $('#cnt_'+p+' table:last-child tr:last-child td:last-child').append('<i> af '+e['who']+'</i>'); }
+            });
+            break;
+
+          case 'guides':
+            $('#cnt_'+p).html("");
+
+            obj[0].forEach(function (e) {
+              $('#cnt_'+p).append('<h1><a href="javascript:$(\'#guide_'+e['id']+'\').toggle()">'+e['title']+'</a></h1>');
+              $('#cnt_'+p).append('<div id="guide_'+e['id']+'">'+e['content']+'</div>');
+            });
+            break;
+
+        }
+
+      });
+
+    });
+
+  } else {
+
+    $('#splash_logo').hide();
+		$('#cnt_front').hide();
+		$('#cnt_login').show();
+
+  }
+
 }
 
 
-/*
-***** DeviceReady and PageInit functions  *****
-*/
+/* DEVICE READY AND PAGE INITIALIZED */
 $$(document).on('deviceready', function() {
-	frontPage();
-	$('#loginBtn').click(function() { nokoLogin(); });
+
+  $('#splash_logo').hide();
+  $('#cnt_front').hide();
+  $('#cnt_login').show();
+
+  load('index');
+
 });
 $$(document).on('pageInit', function (e) {
-    var page = e.detail.page;
-    if (page.name === 'index') { mainView.router.back({ url: myApp.mainView.history[0], force: true }); frontPage();
-	} else if (page.name === 'madplan') { madPage();
-	} else if (page.name === 'kontakt') { kontaktPage();
-	} else if (page.name === 'alumni') { alumniPage('u.name');
-	} else if (page.name === 'vagter') { vagtPage();
-	} else if (page.name === 'vaskeri') { vaskeriPage();
-	} else if (page.name === 'kalender') { calPage();
-	} else if (page.name === 'plenum') { plenumPage();
-	} else if (page.name === 'games') { gamesPage('name');
-	} else if (page.name === 'udvalg') { udvalgPage();
-	} else if (page.name === 'files') { filesPage();
-	} else if (page.name === 'guides') { guidesPage(); }
+
+  var page = e.detail.page.name;
+  if (page == 'index') { mainView.router.back({ url: myApp.mainView.history[0], force: true }); }
+  load(page);
+
 });

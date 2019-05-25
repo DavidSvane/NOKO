@@ -79,6 +79,8 @@
     </platform>
 
     <preference name="DisallowOverscroll" value="true" />
+    <preference name="SplashScreenDelay" value="0"/>
+    <preference name="FadeSplashScreenDuration" value="0"/>
 
     <plugin name="cordova-plugin-whitelist" spec="~1.2.0" />
 </widget>
