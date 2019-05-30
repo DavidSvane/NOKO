@@ -187,7 +187,6 @@ function load(p, reload=false) {
             var curr_day = date.getDay();
             var curr_time = Math.floor(((date.getHours()*60)+date.getMinutes()-360)/75)+2;
             $('#cnt_'+p).html("");
-            console.log(obj);
 
             for (var i = week+2; i > week-1; i--) {
               $('#cnt_'+p).prepend('<h1><a href="javascript:$(\'#cnt_laundry div\').hide(); $(\'.w_'+i+'\').toggle();">Uge '+i+'</a></h1>');
@@ -203,9 +202,9 @@ function load(p, reload=false) {
 
             obj[0].forEach(function (e) {
               if ( parseInt(e['room']) == room ) {
-                $('#cnt_'+p+' .w_'+weekFromISO(e['week'])+' .m_'+e['nr']+' .t_'+e['time']+' .d_'+e['day']).html( '<a id="b_'+e['id']+'" class="owner" onclick="javascript:removeLaundry('+e['id']+')">'+e['room']+'</a>' );
+                $('#cnt_'+p+' .w_'+weekFromISO(e['week'])+' .m_'+e['nr']+' .t_'+(parseInt(e['time'])+1)+' .d_'+e['day']).html( '<a id="b_'+e['id']+'" class="owner" onclick="javascript:removeLaundry('+e['id']+')">'+e['room']+'</a>' );
               } else {
-                $('#cnt_'+p+' .w_'+weekFromISO(e['week'])+' .m_'+e['nr']+' .t_'+e['time']+' .d_'+e['day']).text( e['room'] );
+                $('#cnt_'+p+' .w_'+weekFromISO(e['week'])+' .m_'+e['nr']+' .t_'+(parseInt(e['time'])+1)+' .d_'+e['day']).text( e['room'] );
               }
             });
 
@@ -302,15 +301,7 @@ function load(p, reload=false) {
 
 
 /* DEVICE READY AND PAGE INITIALIZED */
-$$(document).on('deviceready', function() {
-
-  $('#splash_logo').hide();
-  $('#cnt_front').hide();
-  $('#cnt_login').show();
-
-  load('index');
-
-});
+$$(document).on('deviceready', function() { load('index'); });
 $$(document).on('pageInit', function (e) {
 
   var page = e.detail.page.name;
