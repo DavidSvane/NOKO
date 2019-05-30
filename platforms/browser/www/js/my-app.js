@@ -219,7 +219,7 @@ function load(p, reload=false) {
                     parseInt($(this).closest("div").attr("tnt_tab")),
                     parseInt($(this).closest("td").attr("tnt_col")),
                     parseInt($(this).closest("table").attr("tnt_table"))+1,
-                    parseInt($(this).closest("tr").attr("tnt_row"))
+                    parseInt($(this).closest("tr").attr("tnt_row")-1)
                   );
                 });
               }
