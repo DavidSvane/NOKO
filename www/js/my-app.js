@@ -46,17 +46,6 @@ function nokoLogout() {
 
 
 /* SPECIAL FUNCTIONS */
-function tfn(n) {
-
-  var h = Math.floor((300 + (parseInt(n-1) * 75)) / 60) % 24;
-  var m = ((h * 60) + (parseInt(n-2) * 75)) % 60;
-
-  h = ("00" + h).substr(-2);
-  m = ("00" + m).substr(-2);
-
-  return h + ":" + m;
-
-}
 function bookLaundry(week, day, nr, time) {
 
   book_id = week+'_'+day+'_'+nr+'_'+time;
@@ -186,6 +175,7 @@ function load(p, reload=false) {
             var room = window.localStorage.getItem('room');
             var curr_day = date.getDay();
             var curr_time = Math.floor(((date.getHours()*60)+date.getMinutes()-360)/75)+2;
+            var timer = 360;
             $('#cnt_'+p).html("");
 
             for (var i = week+2; i > week-1; i--) {
@@ -197,8 +187,11 @@ function load(p, reload=false) {
             for (var j = 0; j < 19; j++) { $('#cnt_'+p+' table').append('<tr class="t_'+j+'" tnt_row="'+j+'"></tr>'); }
             for (var j = 0; j < 8; j++) { $('#cnt_'+p+' tr').append('<td class="d_'+j+'" tnt_col="'+j+'"></td>'); }
 
-            for (var j = 1; j < 20; j++) { $('#cnt_'+p+' tr:nth-child('+j+') td:first-child').text( tfn(j) ); }
             for (var j = 0; j < 8; j++) { $('#cnt_'+p+' tr:first-child td:nth-child('+(j+1)+')').text( ds[j] ); }
+            for (var j = 2; j < 20; j++) {
+              $('#cnt_'+p+' tr:nth-child('+j+') td:first-child').text(('0'+Math.floor(timer/60)%24).substr(-2)+':'+('0'+timer%60).substr(-2));
+              timer += 75;
+            }
 
             obj[0].forEach(function (e) {
               if ( parseInt(e['room']) == room ) {
