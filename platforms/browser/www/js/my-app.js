@@ -145,7 +145,7 @@ function load(p, reload=false) {
             $('#cnt_'+p).html("");
 
             obj[0].forEach(function (e) {
-              $('#cnt_'+p).append('<h1>Uge '+weekFromISO(e['week'])+'</h1><table cellspacing=0></table>');
+              $('#cnt_'+p).append('<h1>Uge '+weekFromISO(e['week'].replace(/-/g,'/'))+'</h1><table cellspacing=0></table>');
               for (var i = 0; i < 7; i++) { $('#cnt_'+p+' table:last-child').append('<tr><td>'+dage[i]+'</td><td>'+e['d'+(i+1)]+'</td></tr>'); }
             });
             break;
@@ -195,9 +195,9 @@ function load(p, reload=false) {
 
             obj[0].forEach(function (e) {
               if ( parseInt(e['room']) == room ) {
-                $('#cnt_'+p+' .w_'+weekFromISO(e['week'])+' .m_'+e['nr']+' .t_'+(parseInt(e['time'])+1)+' .d_'+e['day']).html( '<a id="b_'+e['id']+'" class="owner" onclick="javascript:removeLaundry('+e['id']+')">'+e['room']+'</a>' );
+                $('#cnt_'+p+' .w_'+weekFromISO(e['week'].replace(/-/g,'/'))+' .m_'+e['nr']+' .t_'+(parseInt(e['time'])+1)+' .d_'+e['day']).html( '<a id="b_'+e['id']+'" class="owner" onclick="javascript:removeLaundry('+e['id']+')">'+e['room']+'</a>' );
               } else {
-                $('#cnt_'+p+' .w_'+weekFromISO(e['week'])+' .m_'+e['nr']+' .t_'+(parseInt(e['time'])+1)+' .d_'+e['day']).text( e['room'] );
+                $('#cnt_'+p+' .w_'+weekFromISO(e['week'].replace(/-/g,'/'))+' .m_'+e['nr']+' .t_'+(parseInt(e['time'])+1)+' .d_'+e['day']).text( e['room'] );
               }
             });
 
