@@ -63,6 +63,18 @@ function removeLaundry(book_id) {
   });
 
 }
+function toggleFoodFavorite(add, week, day) {
+
+  var p = add ? "food_fav_add" : "food_fav_remove";
+
+  $.post('http://davidsvane.com/noko/server/db.php', {page: p, w: week, d: day, nr: localStorage.getItem('user'), ver: 1}, function (data) {
+
+    $('#cnt_mash .mash_food i').toggle();
+
+  });
+
+}
+
 
 
 /* PAGES */
@@ -93,10 +105,32 @@ function load(p, reload=false) {
         switch(p) {
 
           case 'index':
+            var week_nr = weekFromISO(obj['food'][0]['week'].replace(/-/g,'/'));
+            var day_nr = Object.keys(obj['food'][0])[2].substr(1);
+
             $('#cnt_front').html("");
             $('#cnt_front').append('<div id="cnt_mash"></div><div id="cnt_news"></div>');
 
-            $('#cnt_mash').append('<a href="food.html" class="mash_food">I dag skal du have '+obj['food'][0][0]+'.</a>');
+            if (obj['food'][0][0] != null) {
+              $('#cnt_mash').append('<div class="mash_food"><i class="material-icons">favorite_border</i><i class="material-icons">favorite</i><a href="food.html">I dag skal du have '+obj['food'][0][0]+'.</a></div>');
+
+              $('#cnt_mash .mash_food i:first-of-type').click(function (e) { toggleFoodFavorite(true, week_nr, day_nr); });
+              $('#cnt_mash .mash_food i:last-of-type').click(function (e) { toggleFoodFavorite(false, week_nr, day_nr); });
+
+              $.post('http://davidsvane.com/noko/server/db.php', {page: "food_favs", nr: localStorage.getItem('user'), ver: 1}, function (data) {
+
+                var favs = JSON.parse(data)[0];
+                for (var i = 0; i < favs.length; i++) {
+                  if (favs[i].week == week_nr && favs[i].day == day_nr) {
+                    $('#cnt_mash .mash_food i').toggle();
+                    break;
+                  }
+                }
+              });
+
+            } else {
+              $('#cnt_mash').append('<a href="food.html" class="mash_food">I dag står der ingen mad på menuen.</a>');
+            }
 
             if (obj['shifts'].length > 0) {
               $('#cnt_mash').append('<a href="shifts.html" class="mash_shifts">Husk dine køkkenvagter denne måned.</a>');
@@ -110,7 +144,11 @@ function load(p, reload=false) {
               $('#cnt_mash').append('<a href="laundry.html" class="mash_laundry">Du har ingen bookede vasketider denne uge.</a>');
             }
 
-            $('#cnt_mash').append('<a href="calendar.html" class="mash_party">Næste NOKO-arrangement er '+obj['party'][0][1]+' den '+obj['party'][0][0].substr(8,2)+'/'+obj['party'][0][0].substr(5,2)+'.</a>');
+            if (obj['party'][0][1] != null) {
+              $('#cnt_mash').append('<a href="calendar.html" class="mash_party">Næste NOKO-arrangement er '+obj['party'][0][1]+' den '+obj['party'][0][0].substr(8,2)+'/'+obj['party'][0][0].substr(5,2)+'.</a>');
+            } else {
+              $('#cnt_mash').append('<a href="calendar.html" class="mash_party">Der er ingen NOKO-arrangementer den kommende tid.</a>');
+            }
 
             $('#splash_logo').hide();
             $('#cnt_login').hide();
