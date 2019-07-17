@@ -50,13 +50,12 @@ img { width: 100%; display: block; }
 /* TABLE BASED PAGES */
 #cnt_food h1, #cnt_calendar h1, #cnt_shifts h1, #cnt_alumni h1 { width: 100%; font-size: 1.25em; color: black; text-align: center; margin-bottom: 1em; }
 #cnt_calendar h2 { width: 100%; font-size: 1em; color: black; text-align: center; margin-bottom: 1em; }
-#cnt_calendar i, #cnt_shifts { font-size: 0.9em; color: #6d6d72; }
-#cnt_food table, #cnt_calendar table, #cnt_shifts table, #cnt_alumni table { margin-bottom: 2em; width: 100%; }
-#cnt_food tr:nth-child(odd), #cnt_calendar tr:nth-child(odd), #cnt_shifts tr:nth-child(odd), #cnt_alumni tr:nth-child(odd) { background: #eee; }
-#cnt_food td, #cnt_calendar td, #cnt_shifts td, #cnt_alumni td:not(:first-child) { padding: 1em; }
-#cnt_shifts td { text-align: center; }
-#cnt_food td:first-child, #cnt_calendar td:first-child, #cnt_shifts td:first-child, #cnt_shifts tr:first-child, #cnt_alumni td:nth-child(2) { font-style: italic; }
-#cnt_food td:last-child, #cnt_calendar td:last-child, #cnt_shifts td:not(:first-child), #cnt_alumni td:last-child { color: black; }
+#cnt_calendar i { font-size: 0.9em; color: #6d6d72; }
+#cnt_food table, #cnt_calendar table, #cnt_alumni table { border-collapse: collapse; margin-bottom: 2em; width: 100%; }
+#cnt_food tr:nth-child(odd), #cnt_calendar tr:nth-child(odd), #cnt_alumni tr:nth-child(odd) { background: #eee; }
+#cnt_food td, #cnt_calendar td, #cnt_alumni td:not(:first-child) { padding: 1em; }
+#cnt_food td:first-child, #cnt_calendar td:first-child, #cnt_shifts td:first-child, #cnt_alumni td:nth-child(2) { font-style: italic; }
+#cnt_food td:last-child, #cnt_calendar td:last-child, #cnt_alumni td:last-child { color: black; }
 #cnt_alumni img { width: 80px; height: 80px; object-fit: cover; object-position: center; }
 #cnt_alumni img.big_view { position: fixed; width: 100%; height: 100%; object-fit: contain; background: rgba(0,0,0,0.5); left: 50%; top: 50%; transform: translate(-50%, -50%); }
 
@@ -77,3 +76,13 @@ img { width: 100%; display: block; }
 #cnt_laundry .owner { color: #09f; }
 #cnt_laundry .availables { width: 100%; height: 100%; background: rgba(153, 204, 255, 0.3); display: block; }
 #cnt_laundry .availables:hover { background: rgba(0, 153, 255, 0.6); }
+
+#cnt_shifts table { width: 100%; border-collapse: collapse; }
+#cnt_shifts td { font-size: 0.9em; border: 1px solid gray; height: 30px; text-align: center; vertical-align: center; width: 12.5%; color: black; }
+#cnt_shifts td:first-child { font-style: italic; color: gray; }
+#cnt_shifts tr:first-child { font-weight: bold; }
+#cnt_shifts tr:nth-child(even) { background: #eee; }
+#cnt_shifts tr:not(:first-of-type) td:nth-child(2) { color: rgb(42,120,180); }
+#cnt_shifts tr:not(:first-of-type) td:nth-child(3) { color: rgb(42,180,240); }
+#cnt_shifts tr:not(:first-of-type) td:nth-child(4) { color: rgb(180,42,42); }
+#cnt_shifts tr:not(:first-of-type) td:nth-child(5) { color: rgb(240,42,42); }

@@ -12,7 +12,7 @@ function nokoLogin() {
 
   if ( user.length < 1 || pass.length < 1 ) { return; }
 
-  $.post('http://davidsvane.com/noko/server/verify.php', {usr: user, pas: pass}, function (data) {
+  $.post('http://noko.dk/server/verify.php', {usr: user, pas: pass}, function (data) {
 
     if ( data.length < 42 ) { $('#cnt_login .error').show(); return; }
 
@@ -49,7 +49,7 @@ function nokoLogout() {
 function bookLaundry(week, day, nr, time) {
 
   book_id = week+'_'+day+'_'+nr+'_'+time;
-  $.post('http://davidsvane.com/noko/server/db.php', {page: "laundry_book", nr: window.localStorage.getItem('user'), room: window.localStorage.getItem('room'), bid: book_id}, function (data) {
+  $.post('http://noko.dk/server/db.php', {page: "laundry_book", nr: window.localStorage.getItem('user'), room: window.localStorage.getItem('room'), bid: book_id}, function (data) {
     window.localStorage.setItem('active', $('#cnt_laundry div:visible').attr("tnt_tab"));
     load('laundry', true);
    });
@@ -57,7 +57,7 @@ function bookLaundry(week, day, nr, time) {
 }
 function removeLaundry(book_id) {
 
-  $.post('http://davidsvane.com/noko/server/db.php', {page: "laundry_remove", nr: window.localStorage.getItem('user'), room: window.localStorage.getItem('room'), bid: book_id}, function (data) {
+  $.post('http://noko.dk/server/db.php', {page: "laundry_remove", nr: window.localStorage.getItem('user'), room: window.localStorage.getItem('room'), bid: book_id}, function (data) {
     window.localStorage.setItem('active', $('#cnt_laundry div:visible').attr("tnt_tab"));
     load('laundry', true);
   });
@@ -67,11 +67,22 @@ function toggleFoodFavorite(add, week, day) {
 
   var p = add ? "food_fav_add" : "food_fav_remove";
 
-  $.post('http://davidsvane.com/noko/server/db.php', {page: p, w: week, d: day, nr: localStorage.getItem('user'), ver: 1}, function (data) {
+  $.post('http://noko.dk/server/db.php', {page: p, w: week, d: day, nr: localStorage.getItem('user'), ver: 1}, function (data) {
 
     $('#cnt_mash .mash_food i').toggle();
 
   });
+
+}
+function incr(n) {
+
+  n = (n + 2) % 140;
+
+  if (n < 2) {
+    n += 1;
+  }
+
+  return n;
 
 }
 
@@ -85,26 +96,29 @@ function load(p, reload=false) {
   if ( window.localStorage.getItem('user') != null && window.localStorage.getItem('salt') != null ) {
 
     var user = window.localStorage.getItem('user');
+    var room = window.localStorage.getItem('room');
     var salt = window.localStorage.getItem('salt');
 
-    $.post('http://davidsvane.com/noko/server/verify.php', {usr: user, sal: salt}, function (data) {
+    $.post('http://noko.dk/server/verify.php', {usr: user, sal: salt}, function (data) {
 
       if ( data.length < 42 ) { return; }
 
-      var upgraded = ['guides'];
-      var version = upgraded.includes(p) ? 1 : 0;
+      $.post('http://noko.dk/server/app.php', {page: p, nr: user, rm: room}, function (data) {
 
-      $.post('http://davidsvane.com/noko/server/app.php', {page: p, ver: version, nr: user}, function (data) {
+        console.log(data);
 
         if ( data.length < 21 ) { return; }
 
         var obj = JSON.parse(data);
         var dage = ['Mandag','Tirsdag','Onsdag','Torsdag','Fredag','Lørdag','Søndag'];
         var mths = ['Januar','Februar','Marts','April','Maj','Juni','Juli','August','September','Oktober','November','December'];
+        var months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+        var dinm = [31,28,31,30,31,30,31,31,30,31,30,31];
 
         switch(p) {
 
           case 'index':
+            console.log(obj);
             var week_nr = weekFromISO(obj['food'][0]['week'].replace(/-/g,'/'));
             var day_nr = Object.keys(obj['food'][0])[2].substr(1);
 
@@ -117,9 +131,11 @@ function load(p, reload=false) {
               $('#cnt_mash .mash_food i:first-of-type').click(function (e) { toggleFoodFavorite(true, week_nr, day_nr); });
               $('#cnt_mash .mash_food i:last-of-type').click(function (e) { toggleFoodFavorite(false, week_nr, day_nr); });
 
-              $.post('http://davidsvane.com/noko/server/db.php', {page: "food_favs", nr: localStorage.getItem('user'), ver: 1}, function (data) {
+              $.post('http://noko.dk/server/db.php', {page: "food_favs", nr: localStorage.getItem('user'), ver: 1}, function (data) {
 
                 var favs = JSON.parse(data)[0];
+                console.log(favs);
+
                 for (var i = 0; i < favs.length; i++) {
                   if (favs[i].week == week_nr && favs[i].day == day_nr) {
                     $('#cnt_mash .mash_food i').toggle();
@@ -154,11 +170,12 @@ function load(p, reload=false) {
             $('#cnt_login').hide();
             $('#cnt_front').show();
 
-            $.post('http://davidsvane.com/noko/server/app.php', {page: 'news', ver: 1, nr: user}, function (data) {
+            $.post('http://noko.dk/server/app.php', {page: 'news', ver: 1, nr: user}, function (data) {
 
               if ( data.length > 42 ) {
 
-                var news = JSON.parse(data)[0];
+                var news = JSON.parse(data);
+                console.log(news);
                 var appendix = "";
 
                 news.forEach(function (e) {
@@ -182,28 +199,63 @@ function load(p, reload=false) {
           case 'food':
             $('#cnt_'+p).html("");
 
-            obj[0].forEach(function (e) {
+            obj.forEach(function (e) {
               $('#cnt_'+p).append('<h1>Uge '+weekFromISO(e['week'].replace(/-/g,'/'))+'</h1><table cellspacing=0></table>');
               for (var i = 0; i < 7; i++) { $('#cnt_'+p+' table:last-child').append('<tr><td>'+dage[i]+'</td><td>'+e['d'+(i+1)]+'</td></tr>'); }
             });
             break;
 
           case 'shifts':
-            var month = "";
-            $('#cnt_'+p).html("");
+            var year = obj[0].year;
+            var month = obj[0].month - 1;
+            var days = dinm[month];
 
-            obj[0].forEach(function (e) {
-              if (e['month'].substr(5,2) != month) {
-                month = e['month'].substr(5,2);
-                $('#cnt_'+p).append('<h1>'+mths[parseInt(month)-1]+'</h1><table cellspacing=0><tr><td></td><td>Severing</td><td>Opvask</td><td>Tidlig</td><td>Sen</td></tr></table>');
+            $('#cnt_'+p).html("<h1>"+mths[month]+" "+year+"</h1>");
+            $('#cnt_'+p).append("<table><tr><td>Dato</td><td>Servering</td><td>Opvask</td><td>Tidlig</td><td>Sen</td></tr></table>");
+
+            obj = JSON.parse(obj[0].setting);
+            var alumni = obj.alumni;
+            var closed = obj.closed;
+            var extra = obj.extra;
+            var only = obj.only;
+
+            var a1 = parseInt(obj.saften);
+            var a2 = a1 + 2;
+            var mc = parseInt(obj.smorgen);
+
+            for (var i = 0; i < days; i++) {
+              $('#cnt_'+p+' table').append('<tr class="r_'+i+'"><td c_0>'+(i+1)+'.</td></tr>');
+              for (var j = 1; j < 5; j++) {
+                $('#cnt_'+p+' table tr:last-of-type').append('<td class="c_'+j+'"></td>');
+              }
+            }
+
+            for (var i = 0; i < days; i++) {
+              while (alumni.includes(a1)) { a1 = incr(a1); a2 = incr(a1); }
+              while (alumni.includes(a2)) { a2 = incr(a2); }
+
+              if (closed.includes(i+1)) { continue; }
+
+              if (!only.includes(i+1)) {
+                $('#cnt_'+p+' .r_'+i+' .c_1').html(a1);
+                a1 = incr(a1);
+                $('#cnt_'+p+' .r_'+i+' .c_2').html(a2);
+                a2 = incr(a2);
               }
 
-              if (e['type'] == "1") {
-                $('#cnt_'+p+' table:last-child').append('<tr class="dim_'+e['day']+'"><td>'+e['day']+'.</td><td>'+e['d2']+'</td><td>'+e['d1']+'</td></tr>');
-              } else {
-                $('#cnt_'+p+' table:last-child .dim_'+e['day']).append('<td>'+e['d1']+'</td><td>'+e['d2']+'</td>');
+              var weekend = new Date(months[month]+" "+(i+1)+", "+year+" 12:00:00");
+              if ((weekend.getDay() + 6) % 7 > 4 || extra.includes(i+1) || only.includes(i+1)) {
+                while (alumni.includes(mc)) { mc = incr(mc); }
+                $('#cnt_'+p+' .r_'+i+' .c_3').html(mc);
+                mc = incr(mc);
+
+                while (alumni.includes(mc)) { mc = incr(mc); }
+                $('#cnt_'+p+' .r_'+i+' .c_4').html(mc);
+                mc = incr(mc);
               }
-            });
+            }
+
+            console.log(obj);
             break;
 
           case 'laundry':
@@ -231,11 +283,11 @@ function load(p, reload=false) {
               timer += 75;
             }
 
-            obj[0].forEach(function (e) {
-              if ( parseInt(e['room']) == room ) {
-                $('#cnt_'+p+' .w_'+weekFromISO(e['week'].replace(/-/g,'/'))+' .m_'+e['nr']+' .t_'+(parseInt(e['time'])+1)+' .d_'+e['day']).html( '<a id="b_'+e['id']+'" class="owner" onclick="javascript:removeLaundry('+e['id']+')">'+e['room']+'</a>' );
+            obj.forEach(function (e) {
+              if ( parseInt(e['user']) == room ) {
+                $('#cnt_'+p+' .w_'+weekFromISO(e['week'].replace(/-/g,'/'))+' .m_'+e['nr']+' .t_'+(parseInt(e['time'])+1)+' .d_'+e['day']).html( '<a id="b_'+e['id']+'" class="owner" onclick="javascript:removeLaundry('+e['id']+')">'+e['user']+'</a>' );
               } else {
-                $('#cnt_'+p+' .w_'+weekFromISO(e['week'].replace(/-/g,'/'))+' .m_'+e['nr']+' .t_'+(parseInt(e['time'])+1)+' .d_'+e['day']).text( e['room'] );
+                $('#cnt_'+p+' .w_'+weekFromISO(e['week'].replace(/-/g,'/'))+' .m_'+e['nr']+' .t_'+(parseInt(e['time'])+1)+' .d_'+e['day']).text( e['user'] );
               }
             });
 
@@ -272,7 +324,7 @@ function load(p, reload=false) {
               $('#cnt_'+p).append('<h1>'+g+'</h1><table class="gang_'+i+'" cellspacing=0></table>');
             });
 
-            obj[0].forEach(function (e) {
+            obj.forEach(function (e) {
               $('#cnt_'+p+' .gang_'+gang[e['room']]).append('<tr><td><img src="http://noko.dk/ds/alumner/'+e['nr']+'.jpg" onerror="javascript:$(this).remove()"/></td><td>'+e['room']+'</td><td>'+e['name']+'</td></tr>')
             });
 
@@ -288,7 +340,7 @@ function load(p, reload=false) {
 
             $('#cnt_'+p).html("");
 
-            obj[0].forEach(function (e) {
+            obj.forEach(function (e) {
               if (e['date'].substr(0,4) != year) {
                 year = e['date'].substr(0,4);
                 $('#cnt_'+p).append('<h1>'+year+'</h1>');
@@ -308,7 +360,7 @@ function load(p, reload=false) {
           case 'guides':
             $('#cnt_'+p).html("");
 
-            obj[0].forEach(function (e) {
+            obj.forEach(function (e) {
               $('#cnt_'+p).append('<h1><a href="javascript:$(\'#guide_'+e['id']+'\').toggle()">'+e['title']+'</a></h1>');
               $('#cnt_'+p).append('<div id="guide_'+e['id']+'">'+e['content']+'</div>');
             });
